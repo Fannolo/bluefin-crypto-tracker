@@ -12,11 +12,11 @@ import theme from "../../../theme";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTokenPrices } from "../api/fetchTokens";
 import { CacheKey } from "../../../hooks/useQuery";
-import AddTokenModal from "../components/AddToken";
 import { usePortfolio } from "../hooks/usePortfolio";
 import Decimal from "decimal.js";
 import TokenCard from "../components/TokenCard";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AddTokenSheet from "../components/AddToken";
 
 interface TokenPrice {
   address: string;
@@ -27,10 +27,10 @@ interface TokenPrice {
 export default function PortfolioScreen() {
   const { portfolio } = usePortfolio();
   const [showModal, setShowModal] = useState(false);
-  // Example token addresses. Replace with your dynamic list as needed.
-  const tokens = [
-    "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI,0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN",
-  ];
+
+  const tokens = portfolio.map((item) => {
+    return item.address;
+  });
 
   const {
     data: tokenPrices,
@@ -121,11 +121,6 @@ export default function PortfolioScreen() {
             style={{ marginTop: 20 }}
           />
         )}
-
-        <AddTokenModal
-          visible={showModal}
-          onClose={() => setShowModal(false)}
-        />
       </Box>
     </SafeAreaView>
   );

@@ -6,17 +6,20 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import RootStackNavigator from "./navigation";
 import { queryClient } from "./hooks/useQuery";
 import theme from "./theme";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function App() {
   return (
     <SafeAreaProvider>
-      <ThemeProvider theme={theme}>
-        <QueryClientProvider client={queryClient}>
-          <NavigationContainer>
-            <RootStackNavigator />
-          </NavigationContainer>
-        </QueryClientProvider>
-      </ThemeProvider>
+      <GestureHandlerRootView>
+        <ThemeProvider theme={theme}>
+          <QueryClientProvider client={queryClient}>
+            <NavigationContainer>
+              <RootStackNavigator />
+            </NavigationContainer>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </GestureHandlerRootView>
     </SafeAreaProvider>
   );
 }

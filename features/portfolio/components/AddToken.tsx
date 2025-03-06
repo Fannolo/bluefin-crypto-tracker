@@ -1,114 +1,123 @@
-import React, { useState } from "react";
+// AddTokenSheet.tsx
+import React, { useState, useRef, useMemo, useEffect } from "react";
 import {
-  Modal,
   TextInput,
   Alert,
   Platform,
   KeyboardAvoidingView,
+  StyleSheet,
 } from "react-native";
-import { usePortfolio } from "../hooks/usePortfolio";
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import Box from "../../../components/styled/Box";
 import Text from "../../../components/styled/Text";
 import Button from "../../../components/styled/Button";
+import { usePortfolio } from "../../portfolio/hooks/usePortfolio";
+import theme from "../../../theme";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-interface AddTokenModalProps {
-  visible: boolean;
-  onClose: () => void;
+interface AddTokenSheetProps {
   tokenAddress?: string;
   symbol?: string;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export default function AddTokenModal({
-  visible,
-  onClose,
+export default function AddTokenSheet({
   tokenAddress,
   symbol,
-}: AddTokenModalProps) {
-  const { addToken } = usePortfolio();
-  const [address, setAddress] = useState(tokenAddress || "");
-  const [tokenSymbol, setTokenSymbol] = useState(symbol || "");
+  isOpen,
+  onClose,
+}: AddTokenSheetProps) {
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ["50%"], []);
   const [amount, setAmount] = useState("");
   const [purchasePrice, setPurchasePrice] = useState("");
+  const { addToken } = usePortfolio();
+
+  // Expand or close sheet based on isOpen
+  useEffect(() => {
+    if (isOpen) {
+      bottomSheetRef.current?.expand();
+    } else {
+      bottomSheetRef.current?.close();
+    }
+  }, [isOpen]);
 
   const handleSave = () => {
     try {
-      // Basic input sanitization for symbol
-      if (!tokenSymbol.match(/^[A-Za-z0-9]+$/)) {
-        throw new Error("Invalid symbol format");
-      }
-      // Attempt to add token
       addToken({
-        address,
-        symbol: tokenSymbol,
+        address: tokenAddress ?? "",
+        symbol: symbol ?? "",
         amount,
         purchasePrice,
       });
       onClose();
+      // Reset fields after saving
+      setAmount("");
+      setPurchasePrice("");
     } catch (err: any) {
       Alert.alert("Error", err.message);
     }
   };
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      onRequestClose={onClose}
-      transparent
-    >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          backgroundColor: "rgba(0,0,0,0.3)",
-        }}
-      >
-        <Box
-          backgroundColor="background"
-          margin="m"
-          padding="m"
-          borderRadius={10}
+    <BottomSheet ref={bottomSheetRef} snapPoints={[200, 500]}>
+      <BottomSheetView style={styles.contentContainer}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{ flex: 1 }}
         >
-          <Text variant="header" marginBottom="m">
-            Add Token
-          </Text>
-          <Text variant="body">Token Address</Text>
-          <TextInput
-            value={address}
-            onChangeText={setAddress}
-            style={{ borderWidth: 1, marginBottom: 10 }}
-            placeholder="0x..."
-          />
-          <Text variant="body">Symbol</Text>
-          <TextInput
-            value={tokenSymbol}
-            onChangeText={setTokenSymbol}
-            style={{ borderWidth: 1, marginBottom: 10 }}
-            placeholder="e.g. SUI"
-          />
-          <Text variant="body">Amount</Text>
-          <TextInput
-            value={amount}
-            onChangeText={setAmount}
-            style={{ borderWidth: 1, marginBottom: 10 }}
-            placeholder="Enter amount"
-            keyboardType="decimal-pad"
-          />
-          <Text variant="body">Purchase Price</Text>
-          <TextInput
-            value={purchasePrice}
-            onChangeText={setPurchasePrice}
-            style={{ borderWidth: 1, marginBottom: 10 }}
-            placeholder="Enter purchase price"
-            keyboardType="decimal-pad"
-          />
-          <Box flexDirection="row" justifyContent="space-between" marginTop="m">
-            <Button title="Cancel" onPress={onClose} />
-            <Button title="Save" onPress={handleSave} />
+          <Box backgroundColor="background" padding="m">
+            <Text variant="header" marginBottom="m">
+              Add {symbol} to Portfolio
+            </Text>
+            <Text variant="body">Amount</Text>
+            <TextInput
+              value={amount}
+              onChangeText={setAmount}
+              placeholder="Enter amount"
+              keyboardType="decimal-pad"
+              style={{
+                borderWidth: 1,
+                marginBottom: 10,
+                padding: 8,
+                borderColor: theme.colors.primary,
+                borderRadius: 8,
+              }}
+            />
+            <Text variant="body">Purchase Price</Text>
+            <TextInput
+              value={purchasePrice}
+              onChangeText={setPurchasePrice}
+              placeholder="Enter purchase price"
+              keyboardType="decimal-pad"
+              style={{
+                borderWidth: 1,
+                marginBottom: 10,
+                padding: 8,
+                borderColor: theme.colors.primary,
+                borderRadius: 8,
+              }}
+            />
+            <Box
+              flexDirection="row"
+              justifyContent="space-between"
+              marginTop="m"
+            >
+              <Button title="Cancel" onPress={onClose} />
+              <Button title="Save" onPress={handleSave} />
+            </Box>
           </Box>
-        </Box>
-      </KeyboardAvoidingView>
-    </Modal>
+        </KeyboardAvoidingView>
+      </BottomSheetView>
+    </BottomSheet>
   );
 }
+
+const styles = StyleSheet.create({
+  contentContainer: {
+    flex: 1,
+    padding: 36,
+    alignItems: "center",
+  },
+});
