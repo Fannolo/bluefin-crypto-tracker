@@ -18,6 +18,8 @@ import Decimal from "decimal.js";
 import TokenCard from "../components/TokenCard";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PortfolioItem } from "../store";
+import NetInfo from "@react-native-community/netinfo";
+import { useAsyncEffect } from "ahooks";
 
 interface TokenPrice {
   address: string;
@@ -42,6 +44,15 @@ export default function PortfolioScreen() {
     queryKey: [CacheKey.TOKENS],
     queryFn: () => fetchTokenPrices(tokens),
   });
+
+  useAsyncEffect(async () => {
+    const netInfo = await NetInfo.fetch();
+    if (!netInfo.isConnected) {
+      throw new Error(
+        "No network connectivity. Please check your internet connection."
+      );
+    }
+  }, []);
 
   useEffect(() => {
     if (error) {

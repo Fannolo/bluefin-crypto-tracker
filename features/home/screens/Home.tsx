@@ -27,19 +27,22 @@ export default function HomeScreen() {
     );
   });
 
-  const handleTokenPress = (token: TokenData) => {
-    setSelectedToken(token);
-    setSheetVisible(true);
-  };
+  const handleTokenPress = useCallback(
+    (token: TokenData) => () => {
+      setSelectedToken(token);
+      setSheetVisible(true);
+    },
+    []
+  );
 
-  const handleCloseSheet = () => {
+  const handleCloseSheet = useCallback(() => {
     setSheetVisible(false);
     setSelectedToken(null);
-  };
+  }, []);
 
   const renderItem: ListRenderItem<TokenData> = useCallback(
     ({ item }) => (
-      <TouchableOpacity onPress={() => handleTokenPress(item)}>
+      <TouchableOpacity onPress={handleTokenPress(item)}>
         <Box
           backgroundColor="card"
           marginHorizontal="m"

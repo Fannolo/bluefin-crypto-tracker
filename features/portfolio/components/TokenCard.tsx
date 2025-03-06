@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { TouchableOpacity } from "react-native";
 import { usePortfolio } from "../hooks/usePortfolio";
 import Box from "../../../components/styled/Box";
@@ -21,12 +21,15 @@ export default function TokenCard({
 }: TokenCardProps) {
   const { removeToken } = usePortfolio();
 
-  const handleRemove = () => {
-    removeToken(address);
-  };
+  const handleRemove = useCallback(
+    (address: string) => () => {
+      removeToken(address);
+    },
+    []
+  );
 
   return (
-    <TouchableOpacity onLongPress={handleRemove}>
+    <TouchableOpacity onLongPress={handleRemove(address)}>
       <Box
         padding="m"
         marginVertical="s"
