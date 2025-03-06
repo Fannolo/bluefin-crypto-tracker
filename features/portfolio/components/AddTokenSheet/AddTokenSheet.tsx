@@ -8,11 +8,11 @@ import {
   StyleSheet,
 } from "react-native";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import Box from "../../../components/styled/Box";
-import Text from "../../../components/styled/Text";
-import Button from "../../../components/styled/Button";
-import { usePortfolio } from "../../portfolio/hooks/usePortfolio";
-import theme from "../../../theme";
+import Box from "../../../../components/styled/Box";
+import Text from "../../../../components/styled/Text";
+import Button from "../../../../components/styled/Button";
+import { usePortfolio } from "../../hooks/usePortfolio";
+import theme from "../../../../theme";
 import { FormikConfig, useFormik } from "formik";
 import { number, object, string } from "yup";
 

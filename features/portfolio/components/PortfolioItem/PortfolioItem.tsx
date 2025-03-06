@@ -1,6 +1,6 @@
 import { TouchableOpacity, Alert, StyleSheet } from "react-native";
 import React from "react";
-import TokenCard from "../TokenCard";
+import TokenCard from "../TokenCard/TokenCard";
 import { PortfolioItem } from "../../store";
 import { TokenPrice } from "../../types";
 import { usePortfolio } from "../../hooks/usePortfolio";

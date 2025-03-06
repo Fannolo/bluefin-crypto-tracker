@@ -1,8 +1,8 @@
 import React, { useCallback } from "react";
 import { TouchableOpacity } from "react-native";
-import { usePortfolio } from "../hooks/usePortfolio";
-import Box from "../../../components/styled/Box";
-import Text from "../../../components/styled/Text";
+import { usePortfolio } from "../../hooks/usePortfolio";
+import Box from "../../../../components/styled/Box";
+import Text from "../../../../components/styled/Text";
 
 interface TokenCardProps {
   address: string;

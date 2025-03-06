@@ -10,7 +10,7 @@ import { TOKEN_LIST, TokenData } from "../types";
 import Box from "../../../components/styled/Box";
 import Text from "../../../components/styled/Text";
 import theme from "../../../theme";
-import AddTokenSheet from "../../portfolio/components/AddToken";
+import AddTokenSheet from "../../portfolio/components/AddTokenSheet/AddTokenSheet";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useBoolean } from "ahooks";
 
