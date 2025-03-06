@@ -29,7 +29,6 @@ export default function AddTokenSheet({
   onClose,
 }: AddTokenSheetProps) {
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ["50%"], []);
   const [amount, setAmount] = useState("");
   const [purchasePrice, setPurchasePrice] = useState("");
   const { addToken } = usePortfolio();
@@ -61,7 +60,7 @@ export default function AddTokenSheet({
   };
 
   return (
-    <BottomSheet ref={bottomSheetRef} snapPoints={[200, 500]}>
+    <BottomSheet ref={bottomSheetRef} snapPoints={["50%"]} enablePanDownToClose>
       <BottomSheetView style={styles.contentContainer}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}

@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   Alert,
   LayoutAnimation,
+  ListRenderItem,
 } from "react-native";
 import Box from "../../../components/styled/Box";
 import Text from "../../../components/styled/Text";
@@ -16,7 +17,7 @@ import { usePortfolio } from "../hooks/usePortfolio";
 import Decimal from "decimal.js";
 import TokenCard from "../components/TokenCard";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AddTokenSheet from "../components/AddToken";
+import { PortfolioItem } from "../store";
 
 interface TokenPrice {
   address: string;
@@ -78,6 +79,19 @@ export default function PortfolioScreen() {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
   }, [portfolio]);
 
+  const renderItem: ListRenderItem<PortfolioItem> = useCallback(({ item }) => {
+    const priceInfo = tokenPrices?.find((p) => p.address === item.address);
+    return (
+      <TokenCard
+        address={item.address}
+        symbol={item.symbol}
+        currentPrice={priceInfo?.price}
+        amount={item.amount}
+        purchasePrice={item.purchasePrice}
+      />
+    );
+  }, []);
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Box flex={1} backgroundColor="background" padding="m">
@@ -104,20 +118,7 @@ export default function PortfolioScreen() {
           <FlatList
             data={portfolio}
             keyExtractor={(item) => item.address}
-            renderItem={({ item }) => {
-              const priceInfo = tokenPrices?.find(
-                (p) => p.address === item.address
-              );
-              return (
-                <TokenCard
-                  address={item.address}
-                  symbol={item.symbol}
-                  currentPrice={priceInfo?.price}
-                  amount={item.amount}
-                  purchasePrice={item.purchasePrice}
-                />
-              );
-            }}
+            renderItem={renderItem}
             style={{ marginTop: 20 }}
           />
         )}

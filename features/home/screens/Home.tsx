@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   FlatList,
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  ListRenderItem,
 } from "react-native";
 import { TOKEN_LIST, TokenData } from "../types";
 import Box from "../../../components/styled/Box";
 import Text from "../../../components/styled/Text";
 import theme from "../../../theme";
 import AddTokenSheet from "../../portfolio/components/AddToken";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const [search, setSearch] = useState("");
@@ -35,61 +37,68 @@ export default function HomeScreen() {
     setSelectedToken(null);
   };
 
+  const renderItem: ListRenderItem<TokenData> = useCallback(
+    ({ item }) => (
+      <TouchableOpacity onPress={() => handleTokenPress(item)}>
+        <Box
+          backgroundColor="card"
+          marginHorizontal="m"
+          marginVertical="s"
+          padding="m"
+          borderRadius={8}
+        >
+          <Text variant="body" fontWeight="bold">
+            {item.symbol}
+          </Text>
+          <Text variant="body" color="text">
+            {item.name}
+          </Text>
+        </Box>
+      </TouchableOpacity>
+    ),
+    []
+  );
+
   return (
-    <Box flex={1} backgroundColor="background">
-      <Box
-        backgroundColor="primary"
-        paddingVertical="m"
-        paddingHorizontal="m"
-        alignItems="center"
-      >
-        <Text variant="header">Select a Token to Add</Text>
-      </Box>
+    <SafeAreaView style={{ flex: 1 }}>
+      <Box flex={1} backgroundColor="background">
+        <Box
+          backgroundColor="primary"
+          paddingVertical="m"
+          paddingHorizontal="m"
+          alignItems="center"
+        >
+          <Text variant="header">Select a Token to Add</Text>
+        </Box>
 
-      {/* Search Bar */}
-      <Box padding="m">
-        <TextInput
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Search tokens..."
-          style={styles.searchInput}
+        {/* Search Bar */}
+        <Box padding="m">
+          <TextInput
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search tokens..."
+            style={styles.searchInput}
+          />
+        </Box>
+
+        {/* Token List */}
+        <FlatList
+          data={filteredTokens}
+          keyExtractor={(item) => item.address}
+          renderItem={renderItem}
         />
-      </Box>
 
-      {/* Token List */}
-      <FlatList
-        data={filteredTokens}
-        keyExtractor={(item) => item.address}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => handleTokenPress(item)}>
-            <Box
-              backgroundColor="card"
-              marginHorizontal="m"
-              marginVertical="s"
-              padding="m"
-              borderRadius={8}
-            >
-              <Text variant="body" fontWeight="bold">
-                {item.symbol}
-              </Text>
-              <Text variant="body" color="text">
-                {item.name}
-              </Text>
-            </Box>
-          </TouchableOpacity>
+        {/* Bottom Sheet for Adding Token */}
+        {selectedToken && (
+          <AddTokenSheet
+            tokenAddress={selectedToken.address}
+            symbol={selectedToken.symbol}
+            isOpen={isSheetVisible}
+            onClose={handleCloseSheet}
+          />
         )}
-      />
-
-      {/* Bottom Sheet for Adding Token */}
-      {selectedToken && (
-        <AddTokenSheet
-          tokenAddress={selectedToken.address}
-          symbol={selectedToken.symbol}
-          isOpen={isSheetVisible}
-          onClose={handleCloseSheet}
-        />
-      )}
-    </Box>
+      </Box>
+    </SafeAreaView>
   );
 }
 
