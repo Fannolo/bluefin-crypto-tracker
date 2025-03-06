@@ -1,5 +1,5 @@
 // AddTokenSheet.tsx
-import React, { useState, useRef, useMemo, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   TextInput,
   Alert,
@@ -13,7 +13,8 @@ import Text from "../../../components/styled/Text";
 import Button from "../../../components/styled/Button";
 import { usePortfolio } from "../../portfolio/hooks/usePortfolio";
 import theme from "../../../theme";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { FormikConfig, useFormik } from "formik";
+import { number, object, string } from "yup";
 
 interface AddTokenSheetProps {
   tokenAddress?: string;
@@ -29,9 +30,42 @@ export default function AddTokenSheet({
   onClose,
 }: AddTokenSheetProps) {
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const [amount, setAmount] = useState("");
-  const [purchasePrice, setPurchasePrice] = useState("");
   const { addToken } = usePortfolio();
+
+  const handleSave = useCallback(
+    (values: { amount: string; purchasePrice: string }) => {
+      try {
+        addToken({
+          address: tokenAddress ?? "",
+          symbol: symbol ?? "",
+          amount: values.amount,
+          purchasePrice: values.purchasePrice,
+        });
+        onClose();
+        // Reset fields after saving
+      } catch (err: any) {
+        Alert.alert("Error", err.message);
+      }
+    },
+    []
+  );
+
+  const formik = useFormik({
+    initialValues: {
+      amount: "",
+      purchasePrice: "",
+    },
+    onSubmit: handleSave,
+    validationSchema: object({
+      amount: number()
+        .typeError("Amount must be a number")
+        .required("Amount is required"),
+      purchasePrice: number()
+        .typeError("Purchase price must be a number")
+        .required("Purchase price is required"),
+    }),
+    validateOnChange: true,
+  });
 
   // Expand or close sheet based on isOpen
   useEffect(() => {
@@ -41,23 +75,6 @@ export default function AddTokenSheet({
       bottomSheetRef.current?.close();
     }
   }, [isOpen]);
-
-  const handleSave = () => {
-    try {
-      addToken({
-        address: tokenAddress ?? "",
-        symbol: symbol ?? "",
-        amount,
-        purchasePrice,
-      });
-      onClose();
-      // Reset fields after saving
-      setAmount("");
-      setPurchasePrice("");
-    } catch (err: any) {
-      Alert.alert("Error", err.message);
-    }
-  };
 
   return (
     <BottomSheet ref={bottomSheetRef} snapPoints={["50%"]} enablePanDownToClose>
@@ -72,39 +89,49 @@ export default function AddTokenSheet({
             </Text>
             <Text variant="body">Amount</Text>
             <TextInput
-              value={amount}
-              onChangeText={setAmount}
+              value={formik.values.amount}
+              onChangeText={formik.handleChange("amount")}
+              onBlur={formik.handleBlur("amount")}
               placeholder="Enter amount"
               keyboardType="decimal-pad"
-              style={{
-                borderWidth: 1,
-                marginBottom: 10,
-                padding: 8,
-                borderColor: theme.colors.primary,
-                borderRadius: 8,
-              }}
+              style={styles.input}
             />
+            {formik.touched.amount && formik.errors.amount ? (
+              <Text variant="body" style={{ color: "red" }}>
+                {formik.errors.amount}
+              </Text>
+            ) : null}
             <Text variant="body">Purchase Price</Text>
             <TextInput
-              value={purchasePrice}
-              onChangeText={setPurchasePrice}
+              value={formik.values.purchasePrice}
+              onChangeText={formik.handleChange("purchasePrice")}
+              onBlur={formik.handleBlur("purchasePrice")}
               placeholder="Enter purchase price"
               keyboardType="decimal-pad"
-              style={{
-                borderWidth: 1,
-                marginBottom: 10,
-                padding: 8,
-                borderColor: theme.colors.primary,
-                borderRadius: 8,
-              }}
+              style={styles.input}
             />
+            {formik.touched.purchasePrice && formik.errors.purchasePrice ? (
+              <Text
+                variant="body"
+                style={{
+                  color: "red",
+                }}
+              >
+                {formik.errors.purchasePrice}
+              </Text>
+            ) : null}
             <Box
               flexDirection="row"
               justifyContent="space-between"
               marginTop="m"
             >
               <Button title="Cancel" onPress={onClose} />
-              <Button title="Save" onPress={handleSave} />
+              <Button
+                title="Save"
+                onPress={() => {
+                  formik.handleSubmit();
+                }}
+              />
             </Box>
           </Box>
         </KeyboardAvoidingView>
@@ -118,5 +145,12 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 36,
     alignItems: "center",
+  },
+  input: {
+    borderWidth: 1,
+    marginBottom: 10,
+    padding: 8,
+    borderColor: theme.colors.primary,
+    borderRadius: 8,
   },
 });

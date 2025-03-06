@@ -12,11 +12,15 @@ import Text from "../../../components/styled/Text";
 import theme from "../../../theme";
 import AddTokenSheet from "../../portfolio/components/AddToken";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useBoolean } from "ahooks";
 
 export default function HomeScreen() {
   const [search, setSearch] = useState("");
   const [selectedToken, setSelectedToken] = useState<TokenData | null>(null);
-  const [isSheetVisible, setSheetVisible] = useState(false);
+  const [
+    isSheetVisible,
+    { setTrue: setSheetVisible, setFalse: setSheetNotVisible },
+  ] = useBoolean(false);
 
   // Filter tokens by search input
   const filteredTokens = TOKEN_LIST.filter((token) => {
@@ -30,13 +34,13 @@ export default function HomeScreen() {
   const handleTokenPress = useCallback(
     (token: TokenData) => () => {
       setSelectedToken(token);
-      setSheetVisible(true);
+      setSheetVisible();
     },
     []
   );
 
   const handleCloseSheet = useCallback(() => {
-    setSheetVisible(false);
+    setSheetNotVisible();
     setSelectedToken(null);
   }, []);
 

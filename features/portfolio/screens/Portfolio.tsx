@@ -15,11 +15,11 @@ import { fetchTokenPrices } from "../api/fetchTokens";
 import { CacheKey } from "../../../hooks/useQuery";
 import { usePortfolio } from "../hooks/usePortfolio";
 import Decimal from "decimal.js";
-import TokenCard from "../components/TokenCard";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PortfolioItem } from "../store";
 import NetInfo from "@react-native-community/netinfo";
 import { useAsyncEffect } from "ahooks";
+import PortfolioRenderItem from "../components/PortfolioItem";
 
 interface TokenPrice {
   address: string;
@@ -29,7 +29,6 @@ interface TokenPrice {
 
 export default function PortfolioScreen() {
   const { portfolio } = usePortfolio();
-  const [showModal, setShowModal] = useState(false);
 
   const tokens = portfolio.map((item) => {
     return item.address;
@@ -43,6 +42,7 @@ export default function PortfolioScreen() {
   } = useQuery<TokenPrice[], Error>({
     queryKey: [CacheKey.TOKENS],
     queryFn: () => fetchTokenPrices(tokens),
+    refetchInterval: 1000,
   });
 
   useAsyncEffect(async () => {
@@ -91,16 +91,9 @@ export default function PortfolioScreen() {
   }, [portfolio]);
 
   const renderItem: ListRenderItem<PortfolioItem> = useCallback(({ item }) => {
-    const priceInfo = tokenPrices?.find((p) => p.address === item.address);
-    return (
-      <TokenCard
-        address={item.address}
-        symbol={item.symbol}
-        currentPrice={priceInfo?.price}
-        amount={item.amount}
-        purchasePrice={item.purchasePrice}
-      />
-    );
+    if (tokenPrices)
+      return <PortfolioRenderItem item={item} tokenPrices={tokenPrices} />;
+    return null;
   }, []);
 
   return (
@@ -117,7 +110,6 @@ export default function PortfolioScreen() {
         </Box>
 
         <Button title="Refresh Prices" onPress={() => refetch()} />
-        <Button title="Add Token" onPress={() => setShowModal(true)} />
 
         {isLoading ? (
           <ActivityIndicator

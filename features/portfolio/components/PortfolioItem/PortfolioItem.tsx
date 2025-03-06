@@ -11,29 +11,38 @@ import Reanimated, {
   useAnimatedStyle,
 } from "react-native-reanimated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import Box from "../../../../components/styled/Box";
 
 type PortfolioItemProps = {
   item: PortfolioItem;
   tokenPrices: TokenPrice[];
 };
 
-const PortfolioItem = ({ item, tokenPrices }: PortfolioItemProps) => {
+const PortfolioItemRenderItem = ({ item, tokenPrices }: PortfolioItemProps) => {
   const { removeToken } = usePortfolio();
   const priceInfo = tokenPrices?.find((p) => p.address === item.address);
 
   function RightAction(prog: SharedValue<number>, drag: SharedValue<number>) {
     const styleAnimation = useAnimatedStyle(() => {
-      console.log("showRightProgress:", prog.value);
-      console.log("appliedTranslation:", drag.value);
-
       return {
-        transform: [{ translateX: drag.value + 50 }],
+        transform: [{ translateX: drag.value + 100 }],
       };
     });
 
     return (
-      <Reanimated.View style={styleAnimation}>
-        <Text style={styles.rightAction}>Text</Text>
+      <Reanimated.View style={[styleAnimation]}>
+        <TouchableOpacity onPress={() => removeToken(item.address)}>
+          <Box justifyContent="center" alignItems="center">
+            <Text
+              variant="body"
+              style={styles.rightAction}
+              color="background"
+              fontWeight={"800"}
+            >
+              Delete
+            </Text>
+          </Box>
+        </TouchableOpacity>
       </Reanimated.View>
     );
   }
@@ -60,16 +69,22 @@ const PortfolioItem = ({ item, tokenPrices }: PortfolioItemProps) => {
 };
 
 const styles = StyleSheet.create({
-  rightAction: { width: 50, height: 50, backgroundColor: "purple" },
+  rightAction: {
+    width: 100,
+    height: "100%",
+    backgroundColor: "red",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   separator: {
     width: "100%",
     borderTopWidth: 1,
   },
   swipeable: {
-    height: 50,
+    height: "100%",
     backgroundColor: "papayawhip",
     alignItems: "center",
   },
 });
 
-export default PortfolioItem;
+export default PortfolioItemRenderItem;
