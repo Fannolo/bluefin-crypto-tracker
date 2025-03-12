@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   FlatList,
   TextInput,
@@ -13,6 +13,18 @@ import theme from "../../../theme";
 import AddTokenSheet from "../../portfolio/components/AddTokenSheet/AddTokenSheet";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useBoolean } from "ahooks";
+import { CacheKey } from "../../../hooks/useQuery";
+import { useQuery } from "@tanstack/react-query";
+
+const fetchTokens = async (): Promise<TokenData[]> => {
+  const response = await fetch(
+    `https://swap.api.sui-prod.bluefin.io/api/v1/tokens`
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch token prices");
+  }
+  return response.json();
+};
 
 export default function HomeScreen() {
   const [search, setSearch] = useState("");
@@ -22,14 +34,29 @@ export default function HomeScreen() {
     { setTrue: setSheetVisible, setFalse: setSheetNotVisible },
   ] = useBoolean(false);
 
-  // Filter tokens by search input
-  const filteredTokens = TOKEN_LIST.filter((token) => {
-    const lowerQuery = search.toLowerCase();
-    return (
-      token.name.toLowerCase().includes(lowerQuery) ||
-      token.symbol.toLowerCase().includes(lowerQuery)
-    );
+  const {
+    data: tokensListQueryData,
+    isLoading: tokensListQueryDataIsLoading,
+    error: tokensListQueryError,
+  } = useQuery({
+    queryFn: async () => {
+      return await fetchTokens();
+    },
+    queryKey: [CacheKey.TOKENS],
   });
+
+  // Filter tokens by search input
+  const filteredTokens = useMemo(
+    () =>
+      tokensListQueryData?.filter((token) => {
+        const lowerQuery = search.toLowerCase();
+        return (
+          token.name.toLowerCase().includes(lowerQuery) ||
+          token.symbol.toLowerCase().includes(lowerQuery)
+        );
+      }),
+    []
+  );
 
   const handleTokenPress = useCallback(
     (token: TokenData) => () => {
@@ -93,6 +120,14 @@ export default function HomeScreen() {
           data={filteredTokens}
           keyExtractor={(item) => item.address}
           renderItem={renderItem}
+          ListEmptyComponent={() => {
+            // tokens, [], undefined
+            if (tokensListQueryError) {
+              return <Text>error message</Text>;
+            }
+            // skeleton
+            return <></>;
+          }}
         />
 
         {/* Bottom Sheet for Adding Token */}
